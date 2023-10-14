@@ -206,13 +206,17 @@ jobs:
       #     done
 
           
-      - name: download source and run build
+      - name: Download source and Run Build
         run: |
           git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git &&
           export PATH="$PATH:$(pwd)/depot_tools" &&
           mkdir chromium && cd chromium &&
           fetch --no-history ios &&
           cd src &&
-          echo -e "[gn_args]\nuse_blink = true" > ~/.setup-gn &&
+          echo -e "[gn_args]\nuse_blink = true\nenable_code_signing = false\n" > ~/.setup-gn &&
           python3 ios/build/tools/setup-gn.py &&
-          autoninja -C out/Debug-iphonesimulator content_shell
+          autoninja -C out/Debug-iphoneos content_shell
+      - uses: actions/upload-artifact@v3
+        with:
+          name: chromium-ios
+          path: chromium/src/out/Debug-iphoneos
