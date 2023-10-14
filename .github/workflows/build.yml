@@ -211,7 +211,7 @@ jobs:
           git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git &&
           export PATH="$PATH:$(pwd)/depot_tools" &&
           mkdir chromium && cd chromium &&
-          fetch ios --no-history &&
+          fetch ios --nohistory &&
           cd src &&
           echo -e "[gn_args]\nuse_blink = true" > ~/.setup-gn &&
           python3 ios/build/tools/setup-gn.py &&
