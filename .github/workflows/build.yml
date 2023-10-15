@@ -30,12 +30,12 @@ jobs:
           brew install coreutils &&
           git clone --depth 1 https://chromium.googlesource.com/chromium/tools/depot_tools.git &&
           export PATH="$PATH:$(pwd)/depot_tools" &&
-          echo "PATH=$PATH" >> "$GITHUB_ENV" &&
           mkdir chromium && cd chromium &&
           fetch --no-history ios &&
           cd src &&
           echo -e "[gn_args]\nuse_blink = true\nios_enable_code_signing = false\n" > ~/.setup-gn &&
-          python3 ios/build/tools/setup-gn.py
+          python3 ios/build/tools/setup-gn.py &&
+          echo "PATH=$PATH" >> "$GITHUB_ENV"
       - uses: actions/download-artifact@v3
         continue-on-error: true
         with:
