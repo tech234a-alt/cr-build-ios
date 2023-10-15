@@ -41,10 +41,13 @@ jobs:
         with:
           name: chromium-ios-zip
           path: out.zip
+      - name: Zip restore
+        continue-on-error: true
+        run: |
+          unzip out.zip -d chromium/src/out/Debug-iphoneos &&
+          rm out.zip
       - name: Compilation
         run: |
-          unzip out.zip -d chromium/src/out/Debug-iphoneos/obj &&
-          rm out.zip &&
           cd chromium/src &&
           timeout 2m autoninja -C out/Debug-iphoneos content_shell &&
           zip -r out.zip out/Debug-iphoneos/obj
