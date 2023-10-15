@@ -40,7 +40,7 @@ jobs:
         uses: dsnopek/action-download-artifact@latest-workflow-run-for-repo
         continue-on-error: true
         with:
-          workflow_conclusion: ""
+          workflow_conclusion: "completed"
           name: chromium-ios-zip
           if_no_artifact_found: warn
           ensure_latest: true
