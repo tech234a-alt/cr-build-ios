@@ -36,11 +36,14 @@ jobs:
           echo -e "[gn_args]\nuse_blink = true\nios_enable_code_signing = false\n" > ~/.setup-gn &&
           python3 ios/build/tools/setup-gn.py &&
           echo "PATH=$PATH" >> "$GITHUB_ENV"
-      - uses: actions/download-artifact@v3
+      - name: Download workflow artifact
+        uses: dsnopek/action-download-artifact@latest-workflow-run-for-repo
         continue-on-error: true
         with:
+          workflow-conclusion: ""
           name: chromium-ios-zip
-          path: out.zip
+          if_no_artifact_found: warn
+          ensure_latest: true
       - name: Zip restore
         continue-on-error: true
         run: |
