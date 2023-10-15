@@ -47,7 +47,7 @@ jobs:
       - name: Zip restore
         continue-on-error: true
         run: |
-          unzip out.zip -n -d chromium/src/out &&
+          unzip -n out.zip -d chromium/src/out &&
           rm out.zip
       - name: Compilation
         run: |
