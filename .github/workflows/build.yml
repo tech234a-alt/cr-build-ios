@@ -59,4 +59,4 @@ jobs:
         if: always()
         with:
           name: chromium-ios-zip
-          path: chromium/src/out/Debug-iphoneos/out.zip
+          path: out.zip
