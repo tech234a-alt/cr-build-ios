@@ -44,13 +44,16 @@ jobs:
       - name: Zip restore
         continue-on-error: true
         run: |
-          unzip out.zip -d chromium/src/out/Debug-iphoneos &&
+          unzip out.zip -n -d chromium/src/out &&
           rm out.zip
       - name: Compilation
         run: |
           cd chromium/src &&
-          timeout 2m autoninja -C out/Debug-iphoneos content_shell &&
-          zip -r out.zip out/Debug-iphoneos/obj
+          timeout 2m autoninja -C out/Debug-iphoneos content_shell
+      - name: Zip save
+        continue-on-error: true
+        run: |
+          zip -r out.zip chromium/src/out/Debug-iphoneos
       - uses: actions/upload-artifact@v3
         if: always()
         with:
