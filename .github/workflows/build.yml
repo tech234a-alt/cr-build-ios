@@ -37,6 +37,7 @@ jobs:
           echo -e "[gn_args]\nuse_blink = true\nios_enable_code_signing = false\n" > ~/.setup-gn &&
           python3 ios/build/tools/setup-gn.py
       - uses: actions/download-artifact@v3
+        continue-on-error: true
         with:
           name: chromium-ios
           path: chromium/src/out/Debug-iphoneos
@@ -44,6 +45,7 @@ jobs:
         run: |
           timeout 2m autoninja -C out/Debug-iphoneos content_shell
       - uses: actions/upload-artifact@v3
+        if: always()
         with:
           name: chromium-ios
           path: chromium/src/out/Debug-iphoneos
