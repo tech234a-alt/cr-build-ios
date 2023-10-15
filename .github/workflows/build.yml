@@ -51,6 +51,7 @@ jobs:
           cd chromium/src &&
           timeout 2m autoninja -C out/Debug-iphoneos content_shell
       - name: Zip save
+        if: always()
         continue-on-error: true
         run: |
           zip -r out.zip chromium/src/out/Debug-iphoneos
