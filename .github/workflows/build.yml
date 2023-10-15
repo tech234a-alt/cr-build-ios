@@ -54,7 +54,7 @@ jobs:
       - name: Compilation
         run: |
           cd chromium/src &&
-          timeout 2m autoninja -C out/Debug-iphoneos content_shell
+          timeout 270m autoninja -C out/Debug-iphoneos content_shell
       - name: Cache save
         if: always()
         continue-on-error: true
