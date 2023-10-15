@@ -25,7 +25,7 @@ jobs:
     # https://github.com/reitermarkus/dotfiles/blob/7faa1caddd086e8fbb9c5e964285e5031a8d14a5/.github/workflows/ci.yml
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-      - name: Download source and Run Build
+      - name: Download source and run build
         run: |
           brew install coreutils ccache &&
           git clone --depth 1 https://chromium.googlesource.com/chromium/tools/depot_tools.git &&
@@ -34,7 +34,7 @@ jobs:
           mkdir chromium && cd chromium &&
           fetch --no-history ios &&
           cd src &&
-          echo -e "[gn_args]\nuse_blink = true\nios_enable_code_signing = false\ncc_wrapper="env CCACHE_SLOPPINESS=time_macros ccache"\n" > ~/.setup-gn &&
+          echo -e "[gn_args]\nuse_blink = true\nios_enable_code_signing = false\ncc_wrapper=\"env CCACHE_SLOPPINESS=time_macros ccache\"\n" > ~/.setup-gn &&
           python3 ios/build/tools/setup-gn.py &&
           echo "PATH=$PATH" >> "$GITHUB_ENV" &&
           echo "CCACHE_DIR=$CCACHE_DIR" >> "$GITHUB_ENV"
@@ -55,13 +55,24 @@ jobs:
         run: |
           cd chromium/src &&
           timeout 2m autoninja -C out/Debug-iphoneos content_shell
-      - name: Zip save
+      - name: Cache save
         if: always()
         continue-on-error: true
         run: |
           zip -r out.zip ccache
       - uses: actions/upload-artifact@v3
+        continue-on-error: true
         if: always()
         with:
           name: ccache
           path: out.zip
+      - name: Zip save
+        continue-on-error: true
+        run: |
+          zip -r out2.zip chromium/src/out/Debug-iphoneos
+      - uses: actions/upload-artifact@v3
+        continue-on-error: true
+        if: always()
+        with:
+          name: chromium-ios-zip
+          path: out2.zip
