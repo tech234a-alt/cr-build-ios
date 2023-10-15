@@ -43,7 +43,7 @@ jobs:
           path: chromium/src/out/Debug-iphoneos
       - name: Compilation
         run: |
-          timeout 2m autoninja -C out/Debug-iphoneos content_shell
+          cd chromium/src && timeout 2m autoninja -C out/Debug-iphoneos content_shell
       - uses: actions/upload-artifact@v3
         if: always()
         with:
