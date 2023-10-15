@@ -42,7 +42,7 @@ jobs:
         uses: tech234a-alt/action-download-artifact@master
         continue-on-error: true
         with:
-          workflow_conclusion: "completed"
+          workflow_conclusion: "failure"
           name: ccache
           if_no_artifact_found: warn
           ensure_latest: true
