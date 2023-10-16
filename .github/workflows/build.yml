@@ -31,7 +31,6 @@ jobs:
           git clone --depth 1 https://chromium.googlesource.com/chromium/tools/depot_tools.git &&
           export PATH="$PATH:$(pwd)/depot_tools" &&
           export CCACHE_DIR="$(pwd)/ccache" &&
-          ccache -M 15G &&
           mkdir chromium && cd chromium &&
           fetch --no-history ios &&
           cd src &&
@@ -54,7 +53,7 @@ jobs:
           rm out.zip
       - name: Compilation
         run: |
-          cd chromium/src &&
+          ccache -M 15G && cd chromium/src &&
           timeout 300m autoninja -C out/Debug-iphoneos content_shell
       - name: Cache save
         if: always()
