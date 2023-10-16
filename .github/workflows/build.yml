@@ -53,7 +53,7 @@ jobs:
           rm out.zip
       - name: Compilation
         run: |
-          ccache -M 15G && cd chromium/src &&
+          cd chromium/src &&
           timeout 300m autoninja -C out/Debug-iphoneos content_shell
       - name: Cache save
         if: always()
