@@ -60,7 +60,7 @@ jobs:
         continue-on-error: true
         run: |
           zip -r out.zip ccache
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4-beta
         continue-on-error: true
         if: always()
         with:
@@ -74,7 +74,7 @@ jobs:
         continue-on-error: true
         run: |
           zip -r out2.zip chromium/src/out/Debug-iphoneos
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4-beta
         continue-on-error: true
         with:
           name: chromium-ios-zip
