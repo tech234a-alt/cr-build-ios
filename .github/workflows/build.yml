@@ -45,7 +45,7 @@ jobs:
           workflow_conclusion: "completed"
           name: ccache
           if_no_artifact_found: warn
-          search_artifacts: true
+          check_artifacts: true
           ensure_latest: true
       - name: Zip restore
         continue-on-error: true
