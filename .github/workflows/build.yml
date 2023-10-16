@@ -31,6 +31,7 @@ jobs:
           git clone --depth 1 https://chromium.googlesource.com/chromium/tools/depot_tools.git &&
           export PATH="$PATH:$(pwd)/depot_tools" &&
           export CCACHE_DIR="$(pwd)/ccache" &&
+          ccache -M 15G &&
           mkdir chromium && cd chromium &&
           fetch --no-history ios &&
           cd src &&
@@ -42,7 +43,7 @@ jobs:
         uses: tech234a-alt/action-download-artifact@master
         continue-on-error: true
         with:
-          workflow_conclusion: "failure"
+          workflow_conclusion: "completed"
           name: ccache
           if_no_artifact_found: warn
           ensure_latest: true
@@ -54,7 +55,7 @@ jobs:
       - name: Compilation
         run: |
           cd chromium/src &&
-          timeout 270m autoninja -C out/Debug-iphoneos content_shell
+          timeout 300m autoninja -C out/Debug-iphoneos content_shell
       - name: Cache save
         if: always()
         continue-on-error: true
@@ -66,13 +67,21 @@ jobs:
         with:
           name: ccache
           path: out.zip
+      - name: Remove cache zip
+        continue-on-error: true
+        run: |
+          rm out.zip
       - name: Zip save
         continue-on-error: true
         run: |
           zip -r out2.zip chromium/src/out/Debug-iphoneos
       - uses: actions/upload-artifact@v3
         continue-on-error: true
-        if: always()
         with:
           name: chromium-ios-zip
           path: out2.zip
+      - name: Cache stats
+        if: always()
+        continue-on-error: true
+        run: |
+          ccache -s
