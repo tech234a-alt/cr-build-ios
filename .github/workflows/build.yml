@@ -26,8 +26,8 @@ jobs:
       uses: actions/cache@v3
       id: cache
       with:
-        path: ccache
-        key: ccache
+        path: out.zip
+        key: ccachezip
         enableCrossOsArchive: true
     - name: Download workflow artifact
       uses: tech234a-alt/action-download-artifact@master
@@ -39,10 +39,6 @@ jobs:
         if_no_artifact_found: warn
         check_artifacts: true
         ensure_latest: true
-    - name: Zip restore
-      continue-on-error: true
-      run: |
-        unzip -n out.zip
   
   build:
     # The type of runner that the job will run on
@@ -70,13 +66,22 @@ jobs:
         uses: actions/cache@v3
         id: cache
         with:
-          path: ccache
-          key: ccache
+          path: out.zip
+          key: ccachezip
           enableCrossOsArchive: true
+      - name: Zip restore
+        continue-on-error: true
+        run: |
+          unzip -n out.zip
       - name: Compilation
         run: |
           ccache -M 10G && cd chromium/src &&
           timeout 270m autoninja -C out/Debug-iphoneos content_shell
+      - name: Cache save
+        if: always()
+        continue-on-error: true
+        run: |
+          zip -r out.zip ccache
       - name: Zip save
         continue-on-error: true
         run: |
@@ -100,14 +105,9 @@ jobs:
       uses: actions/cache@v3
       id: cache
       with:
-        path: ccache
-        key: ccache
+        path: out.zip
+        key: ccachezip
         enableCrossOsArchive: true
-    - name: Cache save
-      if: always()
-      continue-on-error: true
-      run: |
-        zip -r out.zip ccache
     - uses: actions/upload-artifact@v3
       continue-on-error: true
       if: always()
