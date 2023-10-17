@@ -19,7 +19,7 @@ env:
 jobs:
   # This workflow contains a single job called "build"
   warmcache:
-    runs-on: ubuntu-latest
+    runs-on: macos-13
 
     steps:
     - name: Check cache
@@ -92,7 +92,7 @@ jobs:
         run: |
           ccache -s
   savecache:
-    runs-on: ubuntu-latest
+    runs-on: macos-13
     needs: build
 
     steps:
