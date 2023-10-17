@@ -61,7 +61,6 @@ jobs:
           python3 ios/build/tools/setup-gn.py &&
           echo "PATH=$PATH" >> "$GITHUB_ENV" &&
           echo "CCACHE_DIR=$CCACHE_DIR" >> "$GITHUB_ENV"
-          steps:
       - name: Check cache
         uses: actions/cache@v3
         id: cache
