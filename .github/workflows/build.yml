@@ -18,6 +18,32 @@ env:
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   # This workflow contains a single job called "build"
+  warmcache:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Check cache
+    - uses: actions/cache@v3
+    - id: cache
+    - with:
+        path: ccache
+        key: ccache
+        enableCrossOsArchive: true
+    - name: Download workflow artifact
+      uses: tech234a-alt/action-download-artifact@master
+      if: steps.cache.outputs.cache-hit != 'true'
+      continue-on-error: true
+      with:
+        workflow_conclusion: "completed"
+        name: ccache
+        if_no_artifact_found: warn
+        check_artifacts: true
+        ensure_latest: true
+    - name: Zip restore
+      continue-on-error: true
+      run: |
+        unzip -n out.zip
+  
   build:
     # The type of runner that the job will run on
     runs-on: macos-13
@@ -38,39 +64,18 @@ jobs:
           python3 ios/build/tools/setup-gn.py &&
           echo "PATH=$PATH" >> "$GITHUB_ENV" &&
           echo "CCACHE_DIR=$CCACHE_DIR" >> "$GITHUB_ENV"
-      - name: Download workflow artifact
-        uses: tech234a-alt/action-download-artifact@master
-        continue-on-error: true
-        with:
-          workflow_conclusion: "completed"
-          name: ccache
-          if_no_artifact_found: warn
-          check_artifacts: true
-          ensure_latest: true
-      - name: Zip restore
-        continue-on-error: true
-        run: |
-          unzip -n out.zip &&
-          rm out.zip
+          steps:
+      - name: Check cache
+      - uses: actions/cache@v3
+      - id: cache
+      - with:
+          path: ccache
+          key: ccache
+          enableCrossOsArchive: true
       - name: Compilation
         run: |
-          ccache -M 15G && cd chromium/src &&
+          ccache -M 10G && cd chromium/src &&
           timeout 270m autoninja -C out/Debug-iphoneos content_shell
-      - name: Cache save
-        if: always()
-        continue-on-error: true
-        run: |
-          zip -r out.zip ccache
-      - uses: actions/upload-artifact@v3
-        continue-on-error: true
-        if: always()
-        with:
-          name: ccache
-          path: out.zip
-      - name: Remove cache zip
-        continue-on-error: true
-        run: |
-          rm out.zip
       - name: Zip save
         continue-on-error: true
         run: |
@@ -85,3 +90,25 @@ jobs:
         continue-on-error: true
         run: |
           ccache -s
+  savecache:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Save cache
+    - uses: actions/cache@v3
+    - id: cache
+    - with:
+        path: ccache
+        key: ccache
+        enableCrossOsArchive: true
+    - name: Cache save
+      if: always()
+      continue-on-error: true
+      run: |
+        zip -r out.zip ccache
+    - uses: actions/upload-artifact@v3
+      continue-on-error: true
+      if: always()
+      with:
+        name: ccache
+        path: out.zip
