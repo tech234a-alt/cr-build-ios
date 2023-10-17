@@ -29,6 +29,7 @@ jobs:
         path: out.zip
         key: ccachezip
         enableCrossOsArchive: true
+        lookup-only: true
     - name: Download workflow artifact
       uses: tech234a-alt/action-download-artifact@master
       if: steps.cache.outputs.cache-hit != 'true'
