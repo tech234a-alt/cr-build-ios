@@ -23,7 +23,7 @@ jobs:
 
     steps:
     - name: Check cache
-      uses: actions/cache@v3
+      uses: actions/cache/restore@v3
       id: cache
       with:
         path: out.zip
@@ -39,6 +39,13 @@ jobs:
         if_no_artifact_found: warn
         check_artifacts: true
         ensure_latest: true
+    - name: Save cache
+      uses: actions/cache/save@v3
+      if: steps.cache.outputs.cache-hit != 'true'
+      with:
+        path: out.zip
+        key: ccachezip
+        enableCrossOsArchive: true
   
   build:
     # The type of runner that the job will run on
@@ -62,7 +69,7 @@ jobs:
           echo "PATH=$PATH" >> "$GITHUB_ENV" &&
           echo "CCACHE_DIR=$CCACHE_DIR" >> "$GITHUB_ENV"
       - name: Check cache
-        uses: actions/cache@v3
+        uses: actions/cache/restore@v3
         id: cache
         with:
           path: out.zip
@@ -85,6 +92,14 @@ jobs:
         continue-on-error: true
         run: |
           zip -r out2.zip chromium/src/out/Debug-iphoneos
+          - name: Save cache
+      - name: Cache save
+        uses: actions/cache/save@v3
+        if: steps.cache.outputs.cache-hit != 'true'
+        with:
+          path: out.zip
+          key: ccachezip
+          enableCrossOsArchive: true
       - uses: actions/upload-artifact@v3
         continue-on-error: true
         with:
