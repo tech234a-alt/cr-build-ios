@@ -47,6 +47,7 @@ jobs:
   build:
     # The type of runner that the job will run on
     runs-on: macos-13
+    needs: warmcache
 
     # https://github.com/reitermarkus/dotfiles/blob/7faa1caddd086e8fbb9c5e964285e5031a8d14a5/.github/workflows/ci.yml
     # Steps represent a sequence of tasks that will be executed as part of the job
@@ -92,6 +93,7 @@ jobs:
           ccache -s
   savecache:
     runs-on: ubuntu-latest
+    needs: build
 
     steps:
     - name: Save cache
