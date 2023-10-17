@@ -25,7 +25,7 @@ jobs:
     # https://github.com/reitermarkus/dotfiles/blob/7faa1caddd086e8fbb9c5e964285e5031a8d14a5/.github/workflows/ci.yml
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-      - name: Download source and run build
+      - name: Download dependencies and prep source
         run: |
           brew install coreutils ccache &&
           git clone --depth 1 https://chromium.googlesource.com/chromium/tools/depot_tools.git &&
