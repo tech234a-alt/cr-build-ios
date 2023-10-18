@@ -15,6 +15,7 @@ on:
   workflow_dispatch:
 env:
   DEVELOPER_DIR: /Applications/Xcode_15.0.app/Contents/Developer
+  GH_TOKEN: ${{ github.token }}
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   # This workflow contains a single job called "build"
@@ -84,11 +85,20 @@ jobs:
         run: |
           ccache -M 10G && cd chromium/src &&
           timeout 300m autoninja -C out/Debug-iphoneos content_shell
-      - name: Cache save
+      - name: Zip cache
         if: always()
         continue-on-error: true
         run: |
           zip -q -r out.zip ccache
+      - name: Delete old cache
+        if: always()
+        continue-on-error: true
+        run: |
+          gh api \
+          --method DELETE \
+          -H "Accept: application/vnd.github+json" \
+          -H "X-GitHub-Api-Version: 2022-11-28" \
+          /repos/tech234a-alt/cr-build-ios/actions/caches?key=ccachezip
       - name: Cache save
         if: always()
         continue-on-error: true
