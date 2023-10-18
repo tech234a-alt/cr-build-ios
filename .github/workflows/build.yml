@@ -19,7 +19,7 @@ env:
 jobs:
   # This workflow contains a single job called "build"
   warmcache:
-    runs-on: macos-13
+    runs-on: ubuntu-latest
 
     steps:
     - name: Check cache
@@ -79,7 +79,7 @@ jobs:
       - name: Zip restore
         continue-on-error: true
         run: |
-          unzip -n out.zip
+          unzip -q -n out.zip
       - name: Compilation
         run: |
           ccache -M 10G && cd chromium/src &&
@@ -88,10 +88,11 @@ jobs:
         if: always()
         continue-on-error: true
         run: |
-          zip -r out.zip ccache
+          zip -q -r out.zip ccache
       - name: Cache save
+        if: always()
+        continue-on-error: true
         uses: actions/cache/save@v3
-        if: steps.cache.outputs.cache-hit != 'true'
         with:
           path: out.zip
           key: ccachezip
@@ -99,7 +100,7 @@ jobs:
       - name: Zip save
         continue-on-error: true
         run: |
-          zip -r out2.zip chromium/src/out/Debug-iphoneos
+          zip -q -r out2.zip chromium/src/out/Debug-iphoneos
       - uses: actions/upload-artifact@v3
         continue-on-error: true
         with:
@@ -111,7 +112,7 @@ jobs:
         run: |
           ccache -s
   savecache:
-    runs-on: macos-13
+    runs-on: ubuntu-latest
     needs: build
 
     steps:
