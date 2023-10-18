@@ -41,13 +41,14 @@ jobs:
         if_no_artifact_found: warn
         check_artifacts: true
         ensure_latest: true
-    - name: Save cache
-      uses: actions/cache/save@v3
-      if: steps.cache.outputs.cache-hit != 'true'
-      with:
-        path: out.zip
-        key: ccachezip
-        enableCrossOsArchive: true
+    - name: upload to bashupload
+    - if: always()
+    - continue-on-error: true
+    - run:
+        curl https://bashupload.com/ -T out.zip
+    # - run: |
+    #     echo "url=" >> "$GITHUB_OUTPUT" &&
+    #     curl https://bashupload.com/ -T out.zip >> "$GITHUB_OUTPUT"
   
   build:
     # The type of runner that the job will run on
