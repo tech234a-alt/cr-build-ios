@@ -42,11 +42,11 @@ jobs:
         check_artifacts: true
         ensure_latest: true
     - name: upload to bashupload
-    - if: always()
-    - continue-on-error: true
-    - run:
+      if: always()
+      continue-on-error: true
+      run:
         curl https://bashupload.com/ -T out.zip
-    # - run: |
+    # run: |
     #     echo "url=" >> "$GITHUB_OUTPUT" &&
     #     curl https://bashupload.com/ -T out.zip >> "$GITHUB_OUTPUT"
   
