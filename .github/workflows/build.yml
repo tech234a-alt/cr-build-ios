@@ -89,11 +89,6 @@ jobs:
         continue-on-error: true
         run: |
           zip -r out.zip ccache
-      - name: Zip save
-        continue-on-error: true
-        run: |
-          zip -r out2.zip chromium/src/out/Debug-iphoneos
-          - name: Save cache
       - name: Cache save
         uses: actions/cache/save@v3
         if: steps.cache.outputs.cache-hit != 'true'
@@ -101,6 +96,10 @@ jobs:
           path: out.zip
           key: ccachezip
           enableCrossOsArchive: true
+      - name: Zip save
+        continue-on-error: true
+        run: |
+          zip -r out2.zip chromium/src/out/Debug-iphoneos
       - uses: actions/upload-artifact@v3
         continue-on-error: true
         with:
