@@ -15,46 +15,11 @@ on:
   workflow_dispatch:
 env:
   DEVELOPER_DIR: /Applications/Xcode_15.0.app/Contents/Developer
-  GH_TOKEN: ${{ github.token }}
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  # This workflow contains a single job called "build"
-  warmcache:
-    runs-on: ubuntu-latest
-
-    steps:
-    - name: Check cache
-      uses: actions/cache/restore@v3
-      id: cache
-      with:
-        path: out.zip
-        key: ccachezip
-        enableCrossOsArchive: true
-        lookup-only: true
-    - name: Download workflow artifact
-      uses: tech234a-alt/action-download-artifact@master
-      if: steps.cache.outputs.cache-hit != 'true'
-      continue-on-error: true
-      with:
-        workflow_conclusion: "completed"
-        name: ccache
-        if_no_artifact_found: warn
-        check_artifacts: true
-        ensure_latest: true
-    - name: upload to bashupload
-      if: always()
-      continue-on-error: true
-      run:
-        echo "url=" >> "$GITHUB_OUTPUT" &&
-        curl https://bashupload.com/ -T out.zip | grep -Eo "(http|https)://[a-zA-Z0-9./?=_%:-]*" >> "$GITHUB_OUTPUT"
-    # run: |
-    #     echo "url=" >> "$GITHUB_OUTPUT" &&
-    #     curl https://bashupload.com/ -T out.zip >> "$GITHUB_OUTPUT"
-  
   build:
     # The type of runner that the job will run on
     runs-on: macos-13
-    needs: warmcache
 
     # https://github.com/reitermarkus/dotfiles/blob/7faa1caddd086e8fbb9c5e964285e5031a8d14a5/.github/workflows/ci.yml
     # Steps represent a sequence of tasks that will be executed as part of the job
@@ -72,73 +37,69 @@ jobs:
           python3 ios/build/tools/setup-gn.py &&
           echo "PATH=$PATH" >> "$GITHUB_ENV" &&
           echo "CCACHE_DIR=$CCACHE_DIR" >> "$GITHUB_ENV"
-      - name: Check cache
-        uses: actions/cache/restore@v3
-        id: cache
+      - name: Download workflow artifact
+        uses: tech234a-alt/action-download-artifact@master
+        if: always()
+        continue-on-error: true
         with:
-          path: out.zip
-          key: ccachezip
-          enableCrossOsArchive: true
+          workflow_conclusion: "completed"
+          name: ccache
+          if_no_artifact_found: warn
+          check_artifacts: true
+          ensure_latest: true
       - name: Zip restore
         continue-on-error: true
         run: |
           unzip -q -n out.zip
       - name: Compilation
         run: |
-          ccache -M 10G && cd chromium/src &&
-          timeout 300m autoninja -C out/Debug-iphoneos content_shell
+          ccache -M 25G && cd chromium/src &&
+          timeout 270m autoninja -C out/Debug-iphoneos content_shell
       - name: Zip cache
         if: always()
         continue-on-error: true
         run: |
           zip -q -r out.zip ccache
-      - name: Delete old cache
+      - name: Upload ccache
         if: always()
         continue-on-error: true
-        run: |
-          gh api \
-          --method DELETE \
-          -H "Accept: application/vnd.github+json" \
-          -H "X-GitHub-Api-Version: 2022-11-28" \
-          /repos/tech234a-alt/cr-build-ios/actions/caches?key=ccachezip
-      - name: Cache save
-        if: always()
-        continue-on-error: true
-        uses: actions/cache/save@v3
-        with:
-          path: out.zip
-          key: ccachezip
-          enableCrossOsArchive: true
+        run:
+          echo "url=$(echo https://bashupload.com/ -T out.zip | grep -Eo "(http|https)://[a-zA-Z0-9./?=_%:-]*")" >> "$GITHUB_ENV"
       - name: Zip save
         continue-on-error: true
         run: |
           zip -q -r out2.zip chromium/src/out/Debug-iphoneos
-      - uses: actions/upload-artifact@v3
+      - name: Upload outzip
         continue-on-error: true
-        with:
-          name: chromium-ios-zip
-          path: out2.zip
+        run:
+          echo "buildurl=$(echo https://bashupload.com/ -T out2.zip | grep -Eo "(http|https)://[a-zA-Z0-9./?=_%:-]*")" >> "$GITHUB_ENV"
       - name: Cache stats
         if: always()
         continue-on-error: true
         run: |
           ccache -s
   savecache:
-    runs-on: ubuntu-latest
+    runs-on: macos-13
     needs: build
     if: always()
 
     steps:
     - name: Save cache
-      uses: actions/cache@v3
-      id: cache
-      with:
-        path: out.zip
-        key: ccachezip
-        enableCrossOsArchive: true
+      if: always()
+      run: |
+        wget $url
     - uses: actions/upload-artifact@v3
       continue-on-error: true
       if: always()
       with:
         name: ccache
         path: out.zip
+    - name: Save cache
+      if: always()
+      run: |
+        rm out.zip && wget $buildurl
+    - uses: actions/upload-artifact@v3
+      continue-on-error: true
+      with:
+        name: chromium-ios-zip
+        path: out2.zip
