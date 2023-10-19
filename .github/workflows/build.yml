@@ -45,7 +45,8 @@ jobs:
       if: always()
       continue-on-error: true
       run:
-        curl https://bashupload.com/ -T out.zip
+        echo "url=" >> "$GITHUB_OUTPUT" &&
+        curl https://bashupload.com/ -T out.zip | grep -Eo "(http|https)://[a-zA-Z0-9./?=_%:-]*" >> "$GITHUB_OUTPUT"
     # run: |
     #     echo "url=" >> "$GITHUB_OUTPUT" &&
     #     curl https://bashupload.com/ -T out.zip >> "$GITHUB_OUTPUT"
