@@ -21,6 +21,10 @@ jobs:
     # The type of runner that the job will run on
     runs-on: macos-13
 
+    outputs:
+      url: ${{ steps.ccacheupload.outputs.url }}
+      buildurl: ${{ steps.zipupload.outputs.buildurl }}
+
     # https://github.com/reitermarkus/dotfiles/blob/7faa1caddd086e8fbb9c5e964285e5031a8d14a5/.github/workflows/ci.yml
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
@@ -62,17 +66,23 @@ jobs:
           zip -q -r out.zip ccache
       - name: Upload ccache
         if: always()
+        id: ccacheupload
         continue-on-error: true
         run:
-          echo "url=$(curl https://bashupload.com/ -T out.zip | grep -Eo "(http|https)://[a-zA-Z0-9./?=_%:-]*")" >> "$GITHUB_ENV"
+          url="$(curl https://bashupload.com/ -T out.zip | grep -Eo "(http|https)://[a-zA-Z0-9./?=_%:-]*")" &&
+          echo $url &&
+          echo "url=$url" >> "$GITHUB_OUTPUT"
       - name: Zip save
         continue-on-error: true
         run: |
           zip -q -r out2.zip chromium/src/out/Debug-iphoneos
       - name: Upload outzip
         continue-on-error: true
+        id: zipupload
         run:
-          echo "buildurl=$(curl https://bashupload.com/ -T out2.zip | grep -Eo "(http|https)://[a-zA-Z0-9./?=_%:-]*")" >> "$GITHUB_ENV"
+          buildurl="$(curl https://bashupload.com/ -T out2.zip | grep -Eo "(http|https)://[a-zA-Z0-9./?=_%:-]*")" &&
+          echo $buildurl &&
+          echo "buildurl=$buildurl" >> "$GITHUB_OUTPUT"
       - name: Cache stats
         if: always()
         continue-on-error: true
@@ -81,6 +91,9 @@ jobs:
   savecache:
     runs-on: macos-13
     needs: build
+    env:
+      url: ${{needs.build.outputs.url}}
+      buildurl: ${{needs.build.outputs.buildurl}}
     if: always()
 
     steps:
