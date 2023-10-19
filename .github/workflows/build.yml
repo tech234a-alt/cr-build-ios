@@ -64,7 +64,7 @@ jobs:
         if: always()
         continue-on-error: true
         run:
-          echo "url=$(echo https://bashupload.com/ -T out.zip | grep -Eo "(http|https)://[a-zA-Z0-9./?=_%:-]*")" >> "$GITHUB_ENV"
+          echo "url=$(curl https://bashupload.com/ -T out.zip | grep -Eo "(http|https)://[a-zA-Z0-9./?=_%:-]*")" >> "$GITHUB_ENV"
       - name: Zip save
         continue-on-error: true
         run: |
@@ -72,7 +72,7 @@ jobs:
       - name: Upload outzip
         continue-on-error: true
         run:
-          echo "buildurl=$(echo https://bashupload.com/ -T out2.zip | grep -Eo "(http|https)://[a-zA-Z0-9./?=_%:-]*")" >> "$GITHUB_ENV"
+          echo "buildurl=$(curl https://bashupload.com/ -T out2.zip | grep -Eo "(http|https)://[a-zA-Z0-9./?=_%:-]*")" >> "$GITHUB_ENV"
       - name: Cache stats
         if: always()
         continue-on-error: true
