@@ -41,20 +41,20 @@ jobs:
           python3 ios/build/tools/setup-gn.py &&
           echo "PATH=$PATH" >> "$GITHUB_ENV" &&
           echo "CCACHE_DIR=$CCACHE_DIR" >> "$GITHUB_ENV"
-      # - name: Download workflow artifact
-      #   uses: tech234a-alt/action-download-artifact@master
-      #   if: always()
-      #   continue-on-error: true
-      #   with:
-      #     workflow_conclusion: "completed"
-      #     name: ccache
-      #     if_no_artifact_found: warn
-      #     check_artifacts: true
-      #     ensure_latest: true
-      # - name: Zip restore
-      #   continue-on-error: true
-      #   run: |
-      #     unzip -q -n out.zip
+      - name: Download workflow artifact
+        uses: tech234a-alt/action-download-artifact@master
+        if: always()
+        continue-on-error: true
+        with:
+          workflow_conclusion: "completed"
+          name: ccache
+          if_no_artifact_found: warn
+          check_artifacts: true
+          ensure_latest: true
+      - name: Zip restore
+        continue-on-error: true
+        run: |
+          unzip -q -n out.zip
       - name: Compilation
         run: |
           ccache -M 30G && cd chromium/src &&
