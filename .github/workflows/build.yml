@@ -30,7 +30,7 @@ jobs:
     steps:
       - name: Download dependencies and prep source
         run: |
-          brew install coreutils ccache &&
+          brew install coreutils ccache ffsend &&
           git clone --depth 1 https://chromium.googlesource.com/chromium/tools/depot_tools.git &&
           export PATH="$PATH:$(pwd)/depot_tools" &&
           export CCACHE_DIR="$(pwd)/ccache" &&
@@ -41,24 +41,24 @@ jobs:
           python3 ios/build/tools/setup-gn.py &&
           echo "PATH=$PATH" >> "$GITHUB_ENV" &&
           echo "CCACHE_DIR=$CCACHE_DIR" >> "$GITHUB_ENV"
-      - name: Download workflow artifact
-        uses: tech234a-alt/action-download-artifact@master
-        if: always()
-        continue-on-error: true
-        with:
-          workflow_conclusion: "completed"
-          name: ccache
-          if_no_artifact_found: warn
-          check_artifacts: true
-          ensure_latest: true
-      - name: Zip restore
-        continue-on-error: true
-        run: |
-          unzip -q -n out.zip
+      # - name: Download workflow artifact
+      #   uses: tech234a-alt/action-download-artifact@master
+      #   if: always()
+      #   continue-on-error: true
+      #   with:
+      #     workflow_conclusion: "completed"
+      #     name: ccache
+      #     if_no_artifact_found: warn
+      #     check_artifacts: true
+      #     ensure_latest: true
+      # - name: Zip restore
+      #   continue-on-error: true
+      #   run: |
+      #     unzip -q -n out.zip
       - name: Compilation
         run: |
-          ccache -M 25G && cd chromium/src &&
-          timeout 270m autoninja -C out/Debug-iphoneos content_shell
+          ccache -M 30G && cd chromium/src &&
+          timeout 270m autoninja -C out/Release-iphoneos content_shell
       - name: Zip cache
         if: always()
         continue-on-error: true
@@ -69,7 +69,7 @@ jobs:
         id: ccacheupload
         continue-on-error: true
         run:
-          url="$(curl https://bashupload.com/ -T out.zip | grep -Eo "(http|https)://[a-zA-Z0-9./?=_%:-]*")" &&
+          url=$(ffsend u -q -f -h https://send.datenpost.app/ out.zip) &&
           echo $url &&
           echo "url=$url" >> "$GITHUB_OUTPUT"
       - name: Zip save
@@ -80,7 +80,7 @@ jobs:
         continue-on-error: true
         id: zipupload
         run:
-          buildurl="$(curl https://bashupload.com/ -T out2.zip | grep -Eo "(http|https)://[a-zA-Z0-9./?=_%:-]*")" &&
+          buildurl=$(ffsend u -q -f -h https://send.datenpost.app/ out2.zip) &&
           echo $buildurl &&
           echo "buildurl=$buildurl" >> "$GITHUB_OUTPUT"
       - name: Cache stats
@@ -97,10 +97,14 @@ jobs:
     if: always()
 
     steps:
+    - name: Dependencies
+      if: always()
+      run: |
+        brew install ffsend
     - name: Save cache
       if: always()
       run: |
-        wget $url
+        ffsend download $url
     - uses: actions/upload-artifact@v3
       continue-on-error: true
       if: always()
@@ -110,7 +114,7 @@ jobs:
     - name: Save cache
       if: always()
       run: |
-        rm out.zip && wget $buildurl
+        rm out.zip && ffsend download $buildurl
     - uses: actions/upload-artifact@v3
       continue-on-error: true
       with:
