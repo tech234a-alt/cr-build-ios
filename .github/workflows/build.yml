@@ -25,7 +25,7 @@ jobs:
       - name: Download dependencies and prep source
         run: |
           git clone --depth 1 https://chromium.googlesource.com/chromium/tools/depot_tools.git &&
-          export PATH="$PATH:$(pwd)/depot_tools"
+          export PATH="$PATH:$(pwd)/depot_tools" &&
           mkdir chromium && cd chromium &&
           fetch --no-history ios &&
           cd src &&
