@@ -30,7 +30,7 @@ jobs:
           fetch --no-history ios &&
           cd src &&
           echo -e "[gn_args]\nuse_blink = true\nios_enable_code_signing = false\nios_app_bundle_id_prefix = \"com.testblink001\"\ncc_wrapper=\"env CCACHE_SLOPPINESS=time_macros ccache\"\n" > ~/.setup-gn &&
-          python3 ios/build/tools/setup-gn.py &&
+          python3 ios/build/tools/setup-gn.py
       - name: Compilation
         run: |
           cd chromium/src && autoninja -C out/Release-iphoneos content_shell
