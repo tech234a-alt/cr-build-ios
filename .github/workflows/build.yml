@@ -13,110 +13,33 @@ on:
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
-env:
-  DEVELOPER_DIR: /Applications/Xcode_15.0.app/Contents/Developer
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   build:
     # The type of runner that the job will run on
-    runs-on: macos-13
-
-    outputs:
-      url: ${{ steps.ccacheupload.outputs.url }}
-      buildurl: ${{ steps.zipupload.outputs.buildurl }}
+    runs-on: macos-14
 
     # https://github.com/reitermarkus/dotfiles/blob/7faa1caddd086e8fbb9c5e964285e5031a8d14a5/.github/workflows/ci.yml
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       - name: Download dependencies and prep source
         run: |
-          brew install coreutils ccache ffsend &&
           git clone --depth 1 https://chromium.googlesource.com/chromium/tools/depot_tools.git &&
-          export PATH="$PATH:$(pwd)/depot_tools" &&
-          export CCACHE_DIR="$(pwd)/ccache" &&
+          export PATH="$PATH:$(pwd)/depot_tools"
           mkdir chromium && cd chromium &&
           fetch --no-history ios &&
           cd src &&
           echo -e "[gn_args]\nuse_blink = true\nios_enable_code_signing = false\nios_app_bundle_id_prefix = \"com.testblink001\"\ncc_wrapper=\"env CCACHE_SLOPPINESS=time_macros ccache\"\n" > ~/.setup-gn &&
           python3 ios/build/tools/setup-gn.py &&
-          echo "PATH=$PATH" >> "$GITHUB_ENV" &&
-          echo "CCACHE_DIR=$CCACHE_DIR" >> "$GITHUB_ENV"
-      - name: Download workflow artifact
-        uses: tech234a-alt/action-download-artifact@master
-        if: always()
-        continue-on-error: true
-        with:
-          workflow_conclusion: "completed"
-          name: ccache
-          if_no_artifact_found: warn
-          check_artifacts: true
-          ensure_latest: true
-      - name: Zip restore
-        continue-on-error: true
-        run: |
-          unzip -q -n out.zip
       - name: Compilation
         run: |
-          ccache -M 30G && cd chromium/src &&
-          timeout 270m autoninja -C out/Release-iphoneos content_shell
-      - name: Zip cache
-        if: always()
-        continue-on-error: true
-        run: |
-          zip -q -r out.zip ccache
-      - name: Upload ccache
-        if: always()
-        id: ccacheupload
-        continue-on-error: true
-        run:
-          url=$(ffsend u -q -f -h https://send.datenpost.app/ out.zip) &&
-          echo $url &&
-          echo "url=$url" >> "$GITHUB_OUTPUT"
+          cd chromium/src && autoninja -C out/Release-iphoneos content_shell
       - name: Zip save
         continue-on-error: true
         run: |
-          zip -q -r out2.zip chromium/src/out/Debug-iphoneos
-      - name: Upload outzip
+          zip -q -r out.zip chromium/src/out/Debug-iphoneos
+      - uses: actions/upload-artifact@v4
         continue-on-error: true
-        id: zipupload
-        run:
-          buildurl=$(ffsend u -q -f -h https://send.datenpost.app/ out2.zip) &&
-          echo $buildurl &&
-          echo "buildurl=$buildurl" >> "$GITHUB_OUTPUT"
-      - name: Cache stats
-        if: always()
-        continue-on-error: true
-        run: |
-          ccache -s
-  savecache:
-    runs-on: macos-13
-    needs: build
-    env:
-      url: ${{needs.build.outputs.url}}
-      buildurl: ${{needs.build.outputs.buildurl}}
-    if: always()
-
-    steps:
-    - name: Dependencies
-      if: always()
-      run: |
-        brew install ffsend
-    - name: Save cache
-      if: always()
-      run: |
-        ffsend download $url
-    - uses: actions/upload-artifact@v3
-      continue-on-error: true
-      if: always()
-      with:
-        name: ccache
-        path: out.zip
-    - name: Save cache
-      if: always()
-      run: |
-        rm out.zip && ffsend download $buildurl
-    - uses: actions/upload-artifact@v3
-      continue-on-error: true
-      with:
-        name: chromium-ios-zip
-        path: out2.zip
+        with:
+          name: chromium-ios-zip
+          path: out.zip
