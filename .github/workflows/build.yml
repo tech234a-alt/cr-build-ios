@@ -62,8 +62,8 @@ jobs:
           " &&
           python3 -c "
           file_path = 'gin/public/v8_platform.h'
-          old_text = '''override;\n#endif'''
-          new_text = 'override;'
+          old_text = '''GetThreadIsolatedAllocator() override;\n#endif'''
+          new_text = 'GetThreadIsolatedAllocator() override;'
 
           with open(file_path, 'r') as file:
               file_content = file.read()
