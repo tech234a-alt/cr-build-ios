@@ -37,6 +37,11 @@ jobs:
           fetch --no-history ios &&
           cd src &&
           git apply ../../diff.patch && rm ../../diff.base64 && rm ../../diff.patch &&
+          sed -i '' -e 's/base::features::MakeFreeNoOp(/#if BUILDFLAG(USE_PARTITION_ALLOC)\nbase::features::MakeFreeNoOp(/g' content/browser/browser_main_loop.cc &&
+          sed -i '' -e 's/base::features::MakeFreeNoOp(/#if BUILDFLAG(USE_PARTITION_ALLOC)\nbase::features::MakeFreeNoOp(/g' content/browser/browser_main_runner_impl.cc &&
+          sed -i '' -e 's/base::features::WhenFreeBecomesNoOp::kInShutDownThreads);/base::features::WhenFreeBecomesNoOp::kInShutDownThreads);\n#endif \/\/ BUILDFLAG(USE_PARTITION_ALLOC)/g' content/browser/browser_main_loop.cc &&
+          sed -i '' -e 's/base::features::WhenFreeBecomesNoOp::kBeforeShutDownThreads);/base::features::WhenFreeBecomesNoOp::kBeforeShutDownThreads);\n#endif \/\/ BUILDFLAG(USE_PARTITION_ALLOC)/g' content/browser/browser_main_runner_impl.cc &&
+          sed -i '' -e 's/base::features::WhenFreeBecomesNoOp::kAfterShutDownThreads);/base::features::WhenFreeBecomesNoOp::kAfterShutDownThreads);\n#endif \/\/ BUILDFLAG(USE_PARTITION_ALLOC)/g' content/browser/browser_main_runner_impl.cc &&
           echo -e "[gn_args]\nuse_blink = true\nios_enable_code_signing = false\nios_app_bundle_id_prefix = \"com.testblink001\"\nuse_partition_alloc = false\nsymbol_level = 0\nis_debug = false\nenable_nacl = false\nblink_symbol_level = 0\nv8_symbol_level = 0\n\ncc_wrapper=\"env CCACHE_SLOPPINESS=time_macros ccache\"\n" > ~/.setup-gn &&
           python3 ios/build/tools/setup-gn.py
       - name: Download workflow artifact
