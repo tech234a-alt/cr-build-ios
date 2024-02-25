@@ -27,27 +27,60 @@ jobs:
         env:
           DEVELOPER_DIR: /Applications/Xcode_15.2.app/Contents/Developer
         run: |
+          brew install coreutils ccache &&
           wget https://chromium-review.googlesource.com/changes/chromium%2Fsrc~5206810/revisions/1/patch?download -O diff.base64 &&
           base64 --decode -i diff.base64 -o diff.patch &&
           git clone --depth 1 https://chromium.googlesource.com/chromium/tools/depot_tools.git &&
           export PATH="$PATH:$(pwd)/depot_tools" &&
+          export CCACHE_DIR="$(pwd)/ccache" &&
           mkdir chromium && cd chromium &&
           fetch --no-history ios &&
           cd src &&
-          git apply ../../diff.patch &&
-          echo -e "[gn_args]\nuse_blink = true\nios_enable_code_signing = false\nios_app_bundle_id_prefix = \"com.testblink001\"\nuse_partition_alloc = false\nsymbol_level = 0\nis_debug = false\nenable_nacl = false\nblink_symbol_level = 0\nv8_symbol_level = 0\n" > ~/.setup-gn &&
+          git apply ../../diff.patch && rm diff.base64 && rm diff.patch &&
+          echo -e "[gn_args]\nuse_blink = true\nios_enable_code_signing = false\nios_app_bundle_id_prefix = \"com.testblink001\"\nuse_partition_alloc = false\nsymbol_level = 0\nis_debug = false\nenable_nacl = false\nblink_symbol_level = 0\nv8_symbol_level = 0\n\ncc_wrapper=\"env CCACHE_SLOPPINESS=time_macros ccache\"\n" > ~/.setup-gn &&
           python3 ios/build/tools/setup-gn.py
+      - name: Download workflow artifact
+        uses: tech234a-alt/action-download-artifact@master
+        if: always()
+        continue-on-error: true
+        with:
+          workflow_conclusion: "completed"
+          name: ccache
+          if_no_artifact_found: warn
+          check_artifacts: true
+          ensure_latest: true
+      - name: Zip restore
+        continue-on-error: true
+        run: |
+          unzip -q -n ccache.zip && rm ccache.zip
       - name: Compilation
         env:
           DEVELOPER_DIR: /Applications/Xcode_15.2.app/Contents/Developer
         run: |
-          export PATH="$PATH:$(pwd)/depot_tools" && cd chromium/src && autoninja -C out/Release-iphoneos content_shell
+          export CCACHE_DIR="$(pwd)/ccache" && ccache -M 30G && 
+          export PATH="$PATH:$(pwd)/depot_tools" && cd chromium/src && 
+          timeout 300m autoninja -C out/Release-iphoneos content_shell
+      - name: Zip cache
+        if: always()
+        continue-on-error: true
+        run: |
+          zip -q -r ccache.zip ccache
+      - uses: actions/upload-artifact@v4
+        continue-on-error: true
+        with:
+          name: ccache
+          path: ccache.zip
       - name: Zip save
         continue-on-error: true
         run: |
-          zip -q -r out.zip chromium/src/out/Debug-iphoneos
+          rm ccache.zip && zip -q -r out.zip chromium/src/out/Debug-iphoneos
       - uses: actions/upload-artifact@v4
         continue-on-error: true
         with:
           name: chromium-ios-zip
           path: out.zip
+      - name: Cache stats
+        if: always()
+        continue-on-error: true
+        run: |
+          ccache -s
