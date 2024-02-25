@@ -21,7 +21,7 @@ jobs:
 
     # https://github.com/reitermarkus/dotfiles/blob/7faa1caddd086e8fbb9c5e964285e5031a8d14a5/.github/workflows/ci.yml
     # Steps represent a sequence of tasks that will be executed as part of the job
-    # sed line created using ChatGPT
+    # see for cherry-picked patch: https://issues.chromium.org/issues/40277359
     steps:
       - name: Download dependencies and prep source
         env:
@@ -32,48 +32,7 @@ jobs:
           mkdir chromium && cd chromium &&
           fetch --no-history ios &&
           cd src &&
-          python3 -c "
-          file_path = 'gin/v8_platform.cc'
-          old_text = '''#endif  // BUILDFLAG(USE_PARTITION_ALLOC)\n\nstd::shared_ptr<v8::TaskRunner> V8Platform::GetForegroundTaskRunner(\n'''
-          new_text = '''#else\nPageAllocator* V8Platform::GetPageAllocator() {\nreturn nullptr;\n}\n\nvoid V8Platform::OnCriticalMemoryPressure() {}\n#endif  // BUILDFLAG(USE_PARTITION_ALLOC)\n\nstd::shared_ptr<v8::TaskRunner> V8Platform::GetForegroundTaskRunner(\n'''
-
-          with open(file_path, 'r') as file:
-              file_content = file.read()
-              new_content = file_content.replace(old_text, new_text)
-
-          with open(file_path, 'w') as file:
-              file.write(new_content)
-
-          print('Replacement complete.')
-          " &&
-          python3 -c "
-          file_path = 'gin/public/v8_platform.h'
-          old_text = '''#if BUILDFLAG(USE_PARTITION_ALLOC)'''
-          new_text = ''
-
-          with open(file_path, 'r') as file:
-              file_content = file.read()
-              new_content = file_content.replace(old_text, new_text)
-
-          with open(file_path, 'w') as file:
-              file.write(new_content)
-
-          print('Replacement complete.')
-          " &&
-          python3 -c "
-          file_path = 'gin/public/v8_platform.h'
-          old_text = '''GetThreadIsolatedAllocator() override;\n#endif'''
-          new_text = 'GetThreadIsolatedAllocator() override;'
-
-          with open(file_path, 'r') as file:
-              file_content = file.read()
-              new_content = file_content.replace(old_text, new_text)
-
-          with open(file_path, 'w') as file:
-              file.write(new_content)
-
-          print('Replacement complete.')
-          " &&
+          git fetch https://chromium.googlesource.com/chromium/src refs/changes/10/5206810/1 && git cherry-pick FETCH_HEAD &&
           echo -e "[gn_args]\nuse_blink = true\nios_enable_code_signing = false\nios_app_bundle_id_prefix = \"com.testblink001\"\nuse_partition_alloc = false\nsymbol_level = 0\nis_debug = false\nenable_nacl = false\nblink_symbol_level = 0\nv8_symbol_level = 0\n" > ~/.setup-gn &&
           python3 ios/build/tools/setup-gn.py
       - name: Compilation
