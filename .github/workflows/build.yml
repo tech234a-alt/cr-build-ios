@@ -28,7 +28,7 @@ jobs:
           DEVELOPER_DIR: /Applications/Xcode_15.2.app/Contents/Developer
         run: |
           wget https://chromium-review.googlesource.com/changes/chromium%2Fsrc~5206810/revisions/1/patch?download -O diff.base64 &&
-          base64 --decode diff.base64 > diff.patch &&
+          base64 --decode -i diff.base64 -o diff.patch &&
           git clone --depth 1 https://chromium.googlesource.com/chromium/tools/depot_tools.git &&
           export PATH="$PATH:$(pwd)/depot_tools" &&
           mkdir chromium && cd chromium &&
