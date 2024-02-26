@@ -65,12 +65,12 @@ jobs:
           DEVELOPER_DIR: /Applications/Xcode_15.2.app/Contents/Developer
         run: |
           ccache -M 30G && cd chromium/src && 
-          timeout 1m autoninja -C out/Release-iphoneos content_shell
+          timeout 5m autoninja -C out/Release-iphoneos content_shell
       - name: Zip cache
         if: always()
         continue-on-error: true
         run: |
-          zip -q -r ccache.zip ccache
+          zip -r ccache.zip ccache
       - uses: actions/upload-artifact@v4
         continue-on-error: true
         with:
