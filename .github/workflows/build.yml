@@ -56,6 +56,7 @@ jobs:
           if_no_artifact_found: warn
           check_artifacts: true
           ensure_latest: true
+          skip_unpack: true
       - name: Zip restore
         continue-on-error: true
         run: |
