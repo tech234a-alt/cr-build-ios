@@ -59,7 +59,7 @@ jobs:
       - name: Zip restore
         continue-on-error: true
         run: |
-          unzip -q -n ccache.zip && rm ccache.zip
+          mkdir ccache && unzip -q -n ccache.zip -d ccache && rm ccache.zip
       - name: Compilation
         env:
           DEVELOPER_DIR: /Applications/Xcode_15.2.app/Contents/Developer
