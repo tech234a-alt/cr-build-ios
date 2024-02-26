@@ -70,7 +70,7 @@ jobs:
         if: always()
         continue-on-error: true
         run: |
-          zip -r ccache.zip ccache
+          touch ccache.zip && rm ccache.zip && zip -r ccache.zip ccache
       - uses: actions/upload-artifact@v4
         continue-on-error: true
         with:
