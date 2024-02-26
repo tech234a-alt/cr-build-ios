@@ -66,28 +66,18 @@ jobs:
         run: |
           ccache -M 30G && cd chromium/src && 
           timeout 5m autoninja -C out/Release-iphoneos content_shell
-      - name: Zip cache
-        if: always()
-        continue-on-error: true
-        run: |
-          touch ccache.zip && rm ccache.zip && zip -q -r ccache.zip ccache
       - uses: actions/upload-artifact@v4
         continue-on-error: true
         if: always()
         with:
           name: ccache
-          path: ccache.zip
-      - name: Zip save
-        continue-on-error: true
-        if: always()
-        run: |
-          touch ccache.zip && rm ccache.zip && zip -q -r out.zip chromium/src/out/Debug-iphoneos
+          path: ccache
       - uses: actions/upload-artifact@v4
         continue-on-error: true
         if: always()
         with:
           name: chromium-ios-zip
-          path: out.zip
+          path: chromium/src/out/Debug-iphoneos
       - name: Cache stats
         if: always()
         continue-on-error: true
