@@ -65,7 +65,7 @@ jobs:
           DEVELOPER_DIR: /Applications/Xcode_15.2.app/Contents/Developer
         run: |
           ccache -M 30G && cd chromium/src && 
-          timeout 5m autoninja -C out/Release-iphoneos content_shell
+          timeout 300m autoninja -C out/Release-iphoneos content_shell
       - uses: actions/upload-artifact@v4
         continue-on-error: true
         if: always()
