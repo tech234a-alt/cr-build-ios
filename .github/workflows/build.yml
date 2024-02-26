@@ -59,25 +59,36 @@ jobs:
       - name: Zip restore
         continue-on-error: true
         run: |
-          mkdir ccache && unzip -q -n ccache.zip -d ccache && rm ccache.zip
+          mv ccache.zip ccache_outer.zip && unzip -q -n ccache_outer.zip && rm ccache_outer.zip && unzip -q -n ccache.zip && rm ccache.zip
       - name: Compilation
+        if: always()
         env:
           DEVELOPER_DIR: /Applications/Xcode_15.2.app/Contents/Developer
         run: |
           ccache -M 30G && cd chromium/src && 
           timeout 300m autoninja -C out/Release-iphoneos content_shell
+      - name: Zip cache
+        if: always()
+        continue-on-error: true
+        run: |
+          touch ccache.zip && rm ccache.zip && zip -q -r ccache.zip ccache
       - uses: actions/upload-artifact@v4
         continue-on-error: true
         if: always()
         with:
           name: ccache
-          path: ccache
+          path: ccache.zip
+      - name: Zip save
+        continue-on-error: true
+        if: always()
+        run: |
+          touch ccache.zip && rm ccache.zip && zip -q -r out.zip chromium/src/out/Debug-iphoneos
       - uses: actions/upload-artifact@v4
         continue-on-error: true
         if: always()
         with:
           name: chromium-ios-zip
-          path: chromium/src/out/Debug-iphoneos
+          path: out.zip
       - name: Cache stats
         if: always()
         continue-on-error: true
