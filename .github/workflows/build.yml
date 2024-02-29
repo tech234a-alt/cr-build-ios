@@ -43,7 +43,7 @@ jobs:
           sed -i '' -e 's/base::features::WhenFreeBecomesNoOp::kBeforeShutDownThreads);/base::features::WhenFreeBecomesNoOp::kBeforeShutDownThreads);\n#endif \/\/ BUILDFLAG(USE_PARTITION_ALLOC)/g' content/browser/browser_main_runner_impl.cc &&
           sed -i '' -e 's/base::features::WhenFreeBecomesNoOp::kAfterShutDownThreads);/base::features::WhenFreeBecomesNoOp::kAfterShutDownThreads);\n#endif \/\/ BUILDFLAG(USE_PARTITION_ALLOC)/g' content/browser/browser_main_runner_impl.cc &&
           sed -i '' -e 's/17.4/17.2/g' build/config/ios/ios_sdk_overrides.gni &&
-          echo -e "[gn_args]\nuse_blink = true\nios_enable_code_signing = false\nios_app_bundle_id_prefix = \"com.testblink001\"\nuse_partition_alloc = false\nsymbol_level = 0\nis_debug = false\nenable_nacl = false\nblink_symbol_level = 0\nv8_symbol_level = 0\n\ncc_wrapper=\"env CCACHE_SLOPPINESS=time_macros ccache\"\n" > ~/.setup-gn &&
+          echo -e "[gn_args]\nuse_blink = true\nios_enable_code_signing = false\nios_app_bundle_id_prefix = \"com.testblink001\"\nuse_partition_alloc = false\ncc_wrapper=\"env CCACHE_SLOPPINESS=time_macros ccache\"\n" > ~/.setup-gn &&
           python3 ios/build/tools/setup-gn.py &&
           echo "PATH=$PATH" >> "$GITHUB_ENV" &&
           echo "CCACHE_DIR=$CCACHE_DIR" >> "$GITHUB_ENV"
@@ -68,7 +68,7 @@ jobs:
           DEVELOPER_DIR: /Applications/Xcode_15.2.app/Contents/Developer
         run: |
           ccache -M 30G && cd chromium/src && 
-          timeout 315m autoninja -C out/Release-iphoneos content_shell
+          timeout 315m autoninja -C out/Debug-iphoneos content_shell
       - name: Zip cache
         if: always()
         continue-on-error: true
@@ -84,7 +84,7 @@ jobs:
         continue-on-error: true
         if: always()
         run: |
-          touch ccache.zip && rm ccache.zip && zip -q -r out.zip chromium/src/out/Release-iphoneos
+          touch ccache.zip && rm ccache.zip && zip -q -r out.zip chromium/src/out/Debug-iphoneos
       - uses: actions/upload-artifact@v4
         continue-on-error: true
         if: always()
