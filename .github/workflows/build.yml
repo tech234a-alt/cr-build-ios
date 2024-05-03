@@ -25,7 +25,7 @@ jobs:
     steps:
       - name: Download dependencies and prep source
         env:
-          DEVELOPER_DIR: /Applications/Xcode_15.3.app/Contents/Developer
+          DEVELOPER_DIR: /Applications/Xcode_15.4.app/Contents/Developer
         run: |
           brew install coreutils ccache &&
           wget https://chromium-review.googlesource.com/changes/chromium%2Fsrc~5206810/revisions/1/patch?download -O diff.base64 &&
@@ -64,7 +64,7 @@ jobs:
       - name: Compilation
         if: always()
         env:
-          DEVELOPER_DIR: /Applications/Xcode_15.3.app/Contents/Developer
+          DEVELOPER_DIR: /Applications/Xcode_15.4.app/Contents/Developer
         run: |
           ccache -M 30G && cd chromium/src && 
           timeout 315m autoninja -C out/Release-iphoneos content_shell
