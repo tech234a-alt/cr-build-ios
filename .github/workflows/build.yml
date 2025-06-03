@@ -28,12 +28,20 @@ jobs:
           DEVELOPER_DIR: /Applications/Xcode_16.3.app/Contents/Developer
         run: |
           brew install coreutils ccache &&
+          wget https://chromium-review.googlesource.com/changes/chromium%2Fsrc~5206810/revisions/1/patch?download -O diff.base64 &&
+          base64 --decode -i diff.base64 -o diff.patch &&
           git clone --depth 1 https://chromium.googlesource.com/chromium/tools/depot_tools.git &&
           export PATH="$PATH:$(pwd)/depot_tools" &&
           export CCACHE_DIR="$(pwd)/ccache" &&
           mkdir chromium && cd chromium &&
           fetch --no-history ios &&
           cd src &&
+          git apply ../../diff.patch && rm ../../diff.base64 && rm ../../diff.patch &&Add commentMore actions
+          sed -i '' -e 's/base::features::MakeFreeNoOp(/#if BUILDFLAG(USE_PARTITION_ALLOC)\nbase::features::MakeFreeNoOp(/g' content/browser/browser_main_loop.cc &&
+          sed -i '' -e 's/base::features::MakeFreeNoOp(/#if BUILDFLAG(USE_PARTITION_ALLOC)\nbase::features::MakeFreeNoOp(/g' content/browser/browser_main_runner_impl.cc &&
+          sed -i '' -e 's/base::features::WhenFreeBecomesNoOp::kInShutDownThreads);/base::features::WhenFreeBecomesNoOp::kInShutDownThreads);\n#endif \/\/ BUILDFLAG(USE_PARTITION_ALLOC)/g' content/browser/browser_main_loop.cc &&
+          sed -i '' -e 's/base::features::WhenFreeBecomesNoOp::kBeforeShutDownThreads);/base::features::WhenFreeBecomesNoOp::kBeforeShutDownThreads);\n#endif \/\/ BUILDFLAG(USE_PARTITION_ALLOC)/g' content/browser/browser_main_runner_impl.cc &&
+          sed -i '' -e 's/base::features::WhenFreeBecomesNoOp::kAfterShutDownThreads);/base::features::WhenFreeBecomesNoOp::kAfterShutDownThreads);\n#endif \/\/ BUILDFLAG(USE_PARTITION_ALLOC)/g' content/browser/browser_main_runner_impl.cc &&
           echo -e "[gn_args]\nuse_blink = true\nios_enable_code_signing = false\nuse_lld = false\nios_app_bundle_id_prefix = \"com.testblink001\"\nuse_partition_alloc = false\nsymbol_level = 0\nis_debug = false\nenable_nacl = false\nblink_symbol_level = 0\nv8_symbol_level = 0\n\ncc_wrapper=\"env CCACHE_SLOPPINESS=time_macros ccache\"\n" > ~/.setup-gn &&
           python3 ios/build/tools/setup-gn.py &&
           echo "PATH=$PATH" >> "$GITHUB_ENV" &&
